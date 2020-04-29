@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Security;
+using MathNet.Numerics.LinearRegression;
 
 namespace Charts
 {
@@ -164,25 +165,51 @@ namespace Charts
                 lblMax.Text = "Max Degree: " + max;
                 lblSelf.Text = "Self links: " + selfies;
                 lblDupe.Text = "Duplicate links: " + dupes;
-                lblCluster.Text = "Clustering coefficient: " + String.Format("{0:n3}", total_cluster / nodes);
+                lblCluster.Text = "Average clustering coefficient: " + String.Format("{0:n3}", total_cluster / nodes);
                 Series neighbors = new Series();
+                double[] XValues, YValues;
+                XValues = new double[nodes];
+                YValues = new double[nodes];
+                int i = 0;
                 foreach (Node node in nodelist)
                 {
                     textBox1.Text = "Building Chart Series " + node.node_ID.ToString();
                     Application.DoEvents();
                     neighbors.Points.Add(new DataPoint(node.degree, node.neighbors_degree));
+                    XValues[i] = node.degree;
+                    YValues[i] = node.neighbors_degree;
+                    i++;
                 }
-                foreach (Node node in nodelist)
+                Tuple<double, double> r = MathNet.Numerics.Fit.Power(XValues, YValues);
+                double c = r.Item1;
+                double exp = r.Item2;
+                lblCorrelation.Text = "Degree correlation exponent: " + String.Format("{0:n3}", exp);
+                Series regression = new Series();
+                double temp_x, temp_y;
+                for (i = 0; i < nodes; i++)
+                {
+                    textBox1.Text = "Building Regression Line " + i.ToString();
+                    Application.DoEvents();
+                    temp_x = XValues[i];
+                    temp_y = c * Math.Pow(temp_x, exp);
+                    regression.Points.Add(new DataPoint(temp_x, temp_y)); 
+                }
+                /*foreach (Node node in nodelist)
                 {
                     textBox1.Text = node.node_ID + " Degree: " + node.degree;
                     textBox1.Text += " Degrees: " + String.Format("{0:n3}", node.neighbors_degree);
                     Application.DoEvents();
-                }
+                }*/
                 chart1.Series.Clear();
+                Title title = new Title("Degree Correlation");
+                chart1.Titles.Add(title);
                 chart1.ChartAreas[0].AxisX.IsLogarithmic = true;
                 chart1.ChartAreas[0].AxisY.IsLogarithmic = true;
                 neighbors.ChartType = SeriesChartType.Point;
                 chart1.Series.Add(neighbors);
+                regression.ChartType = SeriesChartType.Line;
+                regression.Color = Color.Red;
+                chart1.Series.Add(regression);
             }
         }
         private void textBox1_TextChanged(object sender, EventArgs e)

@@ -10,8 +10,8 @@ from scipy import stats as statlib
 dataset = "barabasi.edgelist.txt"
 directed = False
 want_in = False
-edgelist = pd.read_csv('F:\\Python\\Networks\\' + dataset, sep='\t', lineterminator='\n', names=['A', 'B']) 
-filename = "F:\\Python\\Networks\\" + dataset.split(".")[0] + ".histo.csv"
+edgelist = pd.read_csv('F:\\Math\\Network Science\\' + dataset, sep='\t', lineterminator='\n', names=['A', 'B']) 
+filename = "F:\\Math\\Network Science\\" + dataset.split(".")[0] + ".histo.csv"
 print(filename)
 nodes = edgelist.values.max() + 1 # Assuming no skipped values, this is the (zero-based) number of nodes 
 links = edgelist.shape[0]

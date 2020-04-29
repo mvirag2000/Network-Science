@@ -7,7 +7,7 @@ namespace Networks
     {
         static void Main(string[] args)
         {
-            System.IO.StreamWriter file = new System.IO.StreamWriter("F:\\Python\\Networks\\barabasi.edgelist2.txt");
+            System.IO.StreamWriter file = new System.IO.StreamWriter("F:\\Math\\Network Science\\barabasi.edgelist2.txt");
             Random rnd = new Random();
             int m = 4; //Links per new node (m)
             int nodes = 2000; //Nodes in network (N) 

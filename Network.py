@@ -7,29 +7,35 @@ from bokeh.models import Span, LinearColorMapper, ColumnDataSource, NumeralTickF
 from bokeh.models.widgets import DataTable, TableColumn, StringFormatter, Paragraph, Div
 from bokeh.layouts import column, row, grid 
 from scipy import stats as statlib
-dataset = "barabasi.edgelist.txt"
-directed = False
-want_in = False
+dataset = "www.edgelist.txt"
+directed = True
+want_in = True
 edgelist = pd.read_csv('F:\\Math\\Network Science\\' + dataset, sep='\t', lineterminator='\n', names=['A', 'B']) 
 filename = "F:\\Math\\Network Science\\" + dataset.split(".")[0] + ".histo.csv"
 print(filename)
 nodes = edgelist.values.max() + 1 # Assuming no skipped values, this is the (zero-based) number of nodes 
 links = edgelist.shape[0]
 print("Nodes:", nodes, " Links:", links)
-matrix = np.zeros(shape=[nodes, nodes]).astype(np.int) 
-matrix[edgelist['A'],edgelist['B']] = 1
-if (directed == False):
-   matrix[edgelist['B'],edgelist['A']] = 1
-if (directed == True and want_in == True):
-    stats = pd.DataFrame(matrix.sum(axis=0))
+out = edgelist.groupby('A').count()
+degree = pd.DataFrame.from_dict(out)
+degree['In'] = edgelist.groupby('B').count()
+degree.fillna(0, inplace=True)
+degree.rename(columns={'B': 'Out'}, inplace=True)
+degree['Both'] = degree['In'] + degree['Out']
+if not directed:
+    direction = 'Both'
 else:
-    stats = pd.DataFrame(matrix.sum(axis=1))
-stats.columns = ['Degree']
-max_deg = stats['Degree'].max()
-min_deg = stats['Degree'].min()
-bins = np.logspace(np.log10(min_deg), np.log10(max_deg), num=50, base=10) # Logarithmic binning 
-groups = stats.groupby(pd.cut(stats['Degree'], bins))
-histo = groups.count()
+    if want_in:
+        direction = 'In'
+    else:
+        direction = 'Out'
+max_deg = degree[direction].max()
+min_deg = degree[direction].min()
+bins_count = int((max_deg - min_deg) / 5)
+degree_list = degree[direction]
+bins = np.logspace(np.log10(min_deg), np.log10(max_deg), num=bins_count, base=10) # Logarithmic binning 
+groups = degree_list.groupby(pd.cut(degree_list, bins)).count()
+histo = pd.DataFrame.from_dict(groups)
 histo.columns = ['Count']
 histo['Left'] = histo.index.categories.left
 histo['Right'] = histo.index.categories.right
@@ -45,7 +51,8 @@ histo.to_csv(filename, index=False)
 string1 = "Dataset: " + dataset +"<br>" 
 string1 += "Nodes: %1.0f <br>" % nodes
 string1 += "Links: %1.0f <br>" % links 
-string1 += "Average Degree: %1.2f <br>" % stats['Degree'].mean()
+string1 += "Average Degree: %1.2f <br>" % degree[direction].mean()
+string1 += "Directed graph: " + direction + "<br>"
 string1 += "Max Degree: %1.0f <br>" % max_deg 
 string1 += "Gamma: %1.2f <br>" % -slope
 para1 = Div(text=string1, width=450) 

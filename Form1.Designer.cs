@@ -30,8 +30,10 @@ namespace Charts
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea4 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Series series4 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.lblLinks = new System.Windows.Forms.Label();
@@ -47,38 +49,45 @@ namespace Charts
             this.lblCluster = new System.Windows.Forms.Label();
             this.lblDataset = new System.Windows.Forms.Label();
             this.lblCorrelation = new System.Windows.Forms.Label();
+            this.chkClustering = new System.Windows.Forms.CheckBox();
+            this.chart2 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.lblGamma = new System.Windows.Forms.Label();
+            this.lblMin = new System.Windows.Forms.Label();
+            this.txtCutoff = new System.Windows.Forms.TextBox();
+            this.label1 = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.menuStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).BeginInit();
             this.SuspendLayout();
             // 
             // chart1
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea1);
-            this.chart1.Location = new System.Drawing.Point(27, 99);
+            chartArea3.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea3);
+            this.chart1.Location = new System.Drawing.Point(15, 121);
             this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.Name = "Series1";
-            this.chart1.Series.Add(series1);
-            this.chart1.Size = new System.Drawing.Size(504, 300);
+            series3.ChartArea = "ChartArea1";
+            series3.Name = "Series1";
+            this.chart1.Series.Add(series3);
+            this.chart1.Size = new System.Drawing.Size(407, 300);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
             this.chart1.Click += new System.EventHandler(this.chart1_Click);
             // 
             // textBox1
             // 
-            this.textBox1.Location = new System.Drawing.Point(553, 99);
+            this.textBox1.Location = new System.Drawing.Point(633, 34);
             this.textBox1.Multiline = true;
             this.textBox1.Name = "textBox1";
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBox1.Size = new System.Drawing.Size(235, 300);
+            this.textBox1.Size = new System.Drawing.Size(235, 78);
             this.textBox1.TabIndex = 1;
             this.textBox1.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
             // 
             // lblLinks
             // 
             this.lblLinks.AutoSize = true;
-            this.lblLinks.Location = new System.Drawing.Point(12, 37);
+            this.lblLinks.Location = new System.Drawing.Point(12, 50);
             this.lblLinks.Name = "lblLinks";
             this.lblLinks.Size = new System.Drawing.Size(32, 13);
             this.lblLinks.TabIndex = 2;
@@ -88,7 +97,7 @@ namespace Charts
             // lblNodes
             // 
             this.lblNodes.AutoSize = true;
-            this.lblNodes.Location = new System.Drawing.Point(12, 50);
+            this.lblNodes.Location = new System.Drawing.Point(12, 37);
             this.lblNodes.Name = "lblNodes";
             this.lblNodes.Size = new System.Drawing.Size(38, 13);
             this.lblNodes.TabIndex = 3;
@@ -106,7 +115,7 @@ namespace Charts
             // lblMax
             // 
             this.lblMax.AutoSize = true;
-            this.lblMax.Location = new System.Drawing.Point(12, 63);
+            this.lblMax.Location = new System.Drawing.Point(198, 92);
             this.lblMax.Name = "lblMax";
             this.lblMax.Size = new System.Drawing.Size(65, 13);
             this.lblMax.TabIndex = 5;
@@ -115,7 +124,7 @@ namespace Charts
             // lblSelf
             // 
             this.lblSelf.AutoSize = true;
-            this.lblSelf.Location = new System.Drawing.Point(119, 37);
+            this.lblSelf.Location = new System.Drawing.Point(198, 37);
             this.lblSelf.Name = "lblSelf";
             this.lblSelf.Size = new System.Drawing.Size(53, 13);
             this.lblSelf.TabIndex = 6;
@@ -124,7 +133,7 @@ namespace Charts
             // lblDupe
             // 
             this.lblDupe.AutoSize = true;
-            this.lblDupe.Location = new System.Drawing.Point(119, 50);
+            this.lblDupe.Location = new System.Drawing.Point(198, 50);
             this.lblDupe.Name = "lblDupe";
             this.lblDupe.Size = new System.Drawing.Size(57, 13);
             this.lblDupe.TabIndex = 7;
@@ -142,7 +151,7 @@ namespace Charts
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(800, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(883, 24);
             this.menuStrip1.TabIndex = 8;
             this.menuStrip1.Text = "menuStrip1";
             this.menuStrip1.ItemClicked += new System.Windows.Forms.ToolStripItemClickedEventHandler(this.menuStrip1_ItemClicked);
@@ -158,14 +167,14 @@ namespace Charts
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // lblCluster
             // 
             this.lblCluster.AutoSize = true;
-            this.lblCluster.Location = new System.Drawing.Point(119, 63);
+            this.lblCluster.Location = new System.Drawing.Point(198, 63);
             this.lblCluster.Name = "lblCluster";
             this.lblCluster.Size = new System.Drawing.Size(53, 13);
             this.lblCluster.TabIndex = 9;
@@ -184,17 +193,82 @@ namespace Charts
             // lblCorrelation
             // 
             this.lblCorrelation.AutoSize = true;
-            this.lblCorrelation.Location = new System.Drawing.Point(119, 76);
+            this.lblCorrelation.Location = new System.Drawing.Point(12, 102);
             this.lblCorrelation.Name = "lblCorrelation";
             this.lblCorrelation.Size = new System.Drawing.Size(57, 13);
             this.lblCorrelation.TabIndex = 11;
             this.lblCorrelation.Text = "Correlation";
             // 
+            // chkClustering
+            // 
+            this.chkClustering.AutoSize = true;
+            this.chkClustering.Location = new System.Drawing.Point(184, 62);
+            this.chkClustering.Name = "chkClustering";
+            this.chkClustering.Size = new System.Drawing.Size(15, 14);
+            this.chkClustering.TabIndex = 12;
+            this.chkClustering.UseVisualStyleBackColor = true;
+            // 
+            // chart2
+            // 
+            chartArea4.Name = "ChartArea1";
+            this.chart2.ChartAreas.Add(chartArea4);
+            this.chart2.Location = new System.Drawing.Point(428, 121);
+            this.chart2.Name = "chart2";
+            series4.ChartArea = "ChartArea1";
+            series4.Name = "Series1";
+            this.chart2.Series.Add(series4);
+            this.chart2.Size = new System.Drawing.Size(440, 300);
+            this.chart2.TabIndex = 13;
+            this.chart2.Text = "chart2";
+            // 
+            // lblGamma
+            // 
+            this.lblGamma.AutoSize = true;
+            this.lblGamma.Location = new System.Drawing.Point(12, 89);
+            this.lblGamma.Name = "lblGamma";
+            this.lblGamma.Size = new System.Drawing.Size(43, 13);
+            this.lblGamma.TabIndex = 14;
+            this.lblGamma.Text = "Gamma";
+            // 
+            // lblMin
+            // 
+            this.lblMin.AutoSize = true;
+            this.lblMin.Location = new System.Drawing.Point(198, 79);
+            this.lblMin.Name = "lblMin";
+            this.lblMin.Size = new System.Drawing.Size(62, 13);
+            this.lblMin.TabIndex = 15;
+            this.lblMin.Text = "Min Degree";
+            // 
+            // txtCutoff
+            // 
+            this.txtCutoff.Location = new System.Drawing.Point(381, 33);
+            this.txtCutoff.Name = "txtCutoff";
+            this.txtCutoff.Size = new System.Drawing.Size(36, 20);
+            this.txtCutoff.TabIndex = 16;
+            this.txtCutoff.Text = "0";
+            this.txtCutoff.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.txtCutoff.TextChanged += new System.EventHandler(this.txtCutoff_TextChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(324, 37);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(54, 13);
+            this.label1.TabIndex = 17;
+            this.label1.Text = "Set Cutoff";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(883, 439);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.txtCutoff);
+            this.Controls.Add(this.lblMin);
+            this.Controls.Add(this.lblGamma);
+            this.Controls.Add(this.chart2);
+            this.Controls.Add(this.chkClustering);
             this.Controls.Add(this.lblCorrelation);
             this.Controls.Add(this.lblDataset);
             this.Controls.Add(this.lblCluster);
@@ -214,6 +288,7 @@ namespace Charts
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart2)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -236,6 +311,12 @@ namespace Charts
         private System.Windows.Forms.Label lblCluster;
         private System.Windows.Forms.Label lblDataset;
         private System.Windows.Forms.Label lblCorrelation;
+        private System.Windows.Forms.CheckBox chkClustering;
+        public Chart chart2;
+        private System.Windows.Forms.Label lblGamma;
+        private System.Windows.Forms.Label lblMin;
+        private System.Windows.Forms.TextBox txtCutoff;
+        private System.Windows.Forms.Label label1;
     }
 }
 

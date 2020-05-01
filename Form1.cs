@@ -26,6 +26,7 @@ namespace Charts
             double x_left = -2.0;
             double x_right = 2.0;
             Series values = new Series();
+            Series values2 = new Series();
             double x_range = x_right - x_left;
             double x_inc = x_range / (limit);
             for (int i = 1; i < limit; i++)
@@ -33,8 +34,11 @@ namespace Charts
                 double x = x_left + i * x_inc;
                 double y = 3.9 - Math.Pow(x, 2); 
                 values.Points.Add(new DataPoint(x, y));
+                values2.Points.Add(new DataPoint(x, 4-y));
             }
             chart1.Series.Add(values);
+            chart2.Series.Add(values2);
+            int cutoff = Convert.ToInt32(txtCutoff.Text);
         }
         private void chart1_Click(object sender, EventArgs e)
         {
@@ -64,18 +68,35 @@ namespace Charts
             {
                 node_ID = ID;
                 degree = 0;
-                neighbors = new List<int> { }; //Neighbor's node_ID
-                clustering = 0;
-                neighbors_degree = 0;
+                neighbors = new List<int> { }; //Neighbors' node_IDs
+                neighbors_degree = 0; //Average of neighbors' degrees 
             }
+        }
+        public double Clustering(List<Node> l, List<Edge> e)
+        {
+            double total_cluster = 0;
+            int nodes = l.Count();
+            foreach (Node node in l) //Traverse nodelist (3) clustering  
+            {   //Broke out this traversal to make it optional 
+                int cluster = 0;
+                textBox1.Text = "Calculating clustering coefficient " + node.node_ID.ToString();
+                Application.DoEvents();
+                foreach (int left in node.neighbors)
+                {
+                    foreach (int right in node.neighbors)
+                    {
+                        if (e.Exists(x => x.a == left && x.b == right)) cluster++;
+                    }
+                }
+                if (node.degree > 2) total_cluster += (double) 2 * cluster / (node.degree * (node.degree - 1));
+            }
+            return total_cluster / nodes;  //Average clustering 
         }
         private void label1_Click(object sender, EventArgs e)
         {
-
         }
         private void openFileDialog1_FileOk(object sender, CancelEventArgs e)
         {
-
         }
         private void menuStrip1_ItemClicked(object sender, ToolStripItemClickedEventArgs e)
         {
@@ -111,21 +132,28 @@ namespace Charts
                 {
                     if (!nodelist.Exists(x => x.node_ID == edge.a)) nodelist.Add(new Node(edge.a));
                     if (!nodelist.Exists(x => x.node_ID == edge.b)) nodelist.Add(new Node(edge.b));
+                    textBox1.Text = "Building Node List: " + edge.a;
+                    Application.DoEvents();
                     if (edge.a == edge.b) selfies++;
                     if (edgelist.Exists(x => x.a == edge.a && x.b == edge.b && !(x == edge)) ||
                         edgelist.Exists(x => x.b == edge.a && x.a == edge.b && !(x == edge))) dupes++;
                 }
-                int max = 0;
                 int links = edgelist.Count();
                 int nodes = nodelist.Count();
+                int max = 0;
+                int min = nodes;
                 string[] filename = openFileDialog1.FileName.Split('\\');
                 lblDataset.Text = "Dataset: " + filename[filename.Length - 1];
                 lblLinks.Text = "Links: " + links;
                 lblNodes.Text = "Nodes: " + nodes;
-                textBox1.Text += "Building Neighbor Lists\r\n";
+                lblMean.Text = "Average Degree: " + String.Format("{0:n2}", (float)2 * links / nodes);
+                lblSelf.Text = "Self links: " + selfies;
+                lblDupe.Text = "Duplicate links: " + dupes;
                 Application.DoEvents();
                 foreach (Node node in nodelist) //Traverse nodelist (1) degrees and neighbor list 
                 {
+                    textBox1.Text = "Building Neighbor List: " + node.node_ID;
+                    Application.DoEvents();
                     node.degree = 0;
                     foreach (Edge edge in edgelist)
                     {
@@ -141,44 +169,46 @@ namespace Charts
                         }
                     }
                     max = Math.Max(max, node.degree);
+                    min = Math.Min(min, node.degree);
                 }
-                float total_cluster = 0;
-                foreach (Node node in nodelist) //Traverse nodelist (2) clustering and degree correlation 
-                {
-                    int cluster = 0;
-                    textBox1.Text = "Calculating clustering coefficient " + node.node_ID.ToString(); 
-                    Application.DoEvents();
-                    foreach (int left in node.neighbors)
-                    {
-                        foreach (int right in node.neighbors)
-                        {
-                            if (edgelist.Exists(x => x.a == left && x.b == right)) cluster++;
-                        }
-                        node.neighbors_degree += nodelist.Find(x => left == x.node_ID).degree;
-                    }
-                    node.neighbors_degree = node.neighbors_degree / node.degree;
-                    if (node.degree < 2) node.clustering = 0;
-                    else node.clustering = (float) 2 * cluster / (node.degree * (node.degree - 1));
-                    total_cluster += node.clustering;
-                }
-                lblMean.Text = "Average Degree: " + String.Format("{0:n2}", (float)2 * links / nodes);
                 lblMax.Text = "Max Degree: " + max;
-                lblSelf.Text = "Self links: " + selfies;
-                lblDupe.Text = "Duplicate links: " + dupes;
-                lblCluster.Text = "Average clustering coefficient: " + String.Format("{0:n3}", total_cluster / nodes);
-                Series neighbors = new Series();
-                double[] XValues, YValues;
-                XValues = new double[nodes];
-                YValues = new double[nodes];
-                int i = 0;
-                foreach (Node node in nodelist)
-                {
-                    textBox1.Text = "Building Chart Series " + node.node_ID.ToString();
+                lblMin.Text = "Min Degree: " + min;
+                foreach (Node node in nodelist) //Traverse nodelist (2) degree correlation 
+                {   //Second traversal is needed because neighbor lists must be built first 
+                    textBox1.Text = "Calculating degree correlation: " + node.node_ID.ToString();
                     Application.DoEvents();
-                    neighbors.Points.Add(new DataPoint(node.degree, node.neighbors_degree));
-                    XValues[i] = node.degree;
-                    YValues[i] = node.neighbors_degree;
-                    i++;
+                    foreach (int n in node.neighbors)
+                    {
+                        node.neighbors_degree += nodelist.Find(x => n == x.node_ID).degree;
+                    }
+                    node.neighbors_degree = node.neighbors_degree / node.degree; //Average of neighbors' degrees
+                }
+                if (chkClustering.Checked) lblCluster.Text = "Average clustering coefficient: " + String.Format("{0:n3}", Clustering(nodelist, edgelist));  
+                Series neighbors = new Series();
+                for (int deg = 1; deg <= max; deg++)
+                {
+                    double count = 0;
+                    double accum = 0;
+                    textBox1.Text = "Building Correlation Series " + deg.ToString();
+                    Application.DoEvents();
+                    foreach (Node node in nodelist)
+                    {
+                        if (node.degree == deg)
+                        {
+                            accum += node.neighbors_degree;
+                            count++;
+                        }
+                    }
+                    if (count > 0) neighbors.Points.Add(new DataPoint(deg, accum/count));
+                }
+                double[] XValues, YValues;
+                int points = neighbors.Points.Count();
+                XValues = new double[points];
+                YValues = new double[points];
+                for (int i = 0; i < points; i++)
+                {
+                    XValues[i] = neighbors.Points[i].XValue;
+                    YValues[i] = neighbors.Points[i].YValues[0];
                 }
                 Tuple<double, double> r = MathNet.Numerics.Fit.Power(XValues, YValues);
                 double c = r.Item1;
@@ -186,7 +216,7 @@ namespace Charts
                 lblCorrelation.Text = "Degree correlation exponent: " + String.Format("{0:n3}", exp);
                 Series regression = new Series();
                 double temp_x, temp_y;
-                for (i = 0; i < nodes; i++)
+                for (int i = 0; i < points; i++)
                 {
                     textBox1.Text = "Building Regression Line " + i.ToString();
                     Application.DoEvents();
@@ -194,12 +224,6 @@ namespace Charts
                     temp_y = c * Math.Pow(temp_x, exp);
                     regression.Points.Add(new DataPoint(temp_x, temp_y)); 
                 }
-                /*foreach (Node node in nodelist)
-                {
-                    textBox1.Text = node.node_ID + " Degree: " + node.degree;
-                    textBox1.Text += " Degrees: " + String.Format("{0:n3}", node.neighbors_degree);
-                    Application.DoEvents();
-                }*/
                 chart1.Series.Clear();
                 Title title = new Title("Degree Correlation");
                 chart1.Titles.Add(title);
@@ -210,6 +234,69 @@ namespace Charts
                 regression.ChartType = SeriesChartType.Line;
                 regression.Color = Color.Red;
                 chart1.Series.Add(regression);
+                /*
+                 * Wrote this groovy log-binning routine and ended up not using it
+                 * 
+                int bins = max - min + 1; //Which would give one each, iff no gaps 
+                double logsize = Math.Log10(max / min) / bins;
+                double left, right;
+                left = Math.Log10(min);
+                Series distro = new Series();
+                for (int deg = 1; deg <= max; deg++)
+                {
+                    right = left + Math.Pow(deg * logsize, 10); 
+                    double count = 0;
+                    foreach (Node node in nodelist) if (node.degree >= left && node.degree < right) count++;
+                    if (count > 0) distro.Points.Add(new DataPoint(right, count/nodes));
+                    left = right;
+                } */
+                Series distro = new Series();
+                int cutoff = Convert.ToInt32(txtCutoff.Text);
+                Series shadow = new Series();
+                double prev = 1;
+                for (int deg = 1; deg <= max; deg++)
+                {
+                    double count = 0;
+                    textBox1.Text = "Building Degree Distribution " + deg.ToString();
+                    Application.DoEvents();
+                    foreach (Node node in nodelist) if (node.degree == deg) count++;
+                    distro.Points.Add(new DataPoint(deg, prev));
+                    if (deg > cutoff) shadow.Points.Add(new DataPoint(deg, prev));
+                    prev = prev - count / nodes; 
+                }
+                double[] X2Values, Y2Values;
+                points = shadow.Points.Count();
+                X2Values = new double[points];
+                Y2Values = new double[points];
+                for (int i = 0; i < points; i++)
+                {
+                    X2Values[i] = shadow.Points[i].XValue;
+                    Y2Values[i] = shadow.Points[i].YValues[0];
+                }
+                Tuple<double, double> r2 = MathNet.Numerics.Fit.Power(X2Values, Y2Values);
+                double c2 = r2.Item1;
+                double exp2 = r2.Item2;
+                lblGamma.Text = "Degree exponent (gamma): " + String.Format("{0:n3}", -exp2);
+                Series regression2 = new Series();
+                double temp_x2, temp_y2;
+                for (int i = 0; i < points; i++)
+                {
+                    textBox1.Text = "Building Regression Line " + i.ToString();
+                    Application.DoEvents();
+                    temp_x2 = X2Values[i];
+                    temp_y2 = c2 * Math.Pow(temp_x2, exp2);
+                    regression2.Points.Add(new DataPoint(temp_x2, temp_y2));
+                }
+                chart2.Series.Clear();
+                Title title2 = new Title("Cumulative Degree Distribution");
+                chart2.Titles.Add(title2);
+                chart2.ChartAreas[0].AxisX.IsLogarithmic = true;
+                chart2.ChartAreas[0].AxisY.IsLogarithmic = true;
+                distro.ChartType = SeriesChartType.Point;
+                chart2.Series.Add(distro);
+                regression2.ChartType = SeriesChartType.Line;
+                regression2.Color = Color.Red;
+                chart2.Series.Add(regression2);
             }
         }
         private void textBox1_TextChanged(object sender, EventArgs e)
@@ -217,6 +304,11 @@ namespace Charts
         }
         private void label1_Click_1(object sender, EventArgs e)
         {
+        }
+
+        private void txtCutoff_TextChanged(object sender, EventArgs e)
+        {
+            int cutoff = Convert.ToInt32(txtCutoff.Text);
         }
     }
 }

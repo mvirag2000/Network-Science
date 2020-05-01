@@ -225,8 +225,6 @@ namespace Charts
                     regression.Points.Add(new DataPoint(temp_x, temp_y)); 
                 }
                 chart1.Series.Clear();
-                Title title = new Title("Degree Correlation");
-                chart1.Titles.Add(title);
                 chart1.ChartAreas[0].AxisX.IsLogarithmic = true;
                 chart1.ChartAreas[0].AxisY.IsLogarithmic = true;
                 neighbors.ChartType = SeriesChartType.Point;
@@ -276,7 +274,7 @@ namespace Charts
                 Tuple<double, double> r2 = MathNet.Numerics.Fit.Power(X2Values, Y2Values);
                 double c2 = r2.Item1;
                 double exp2 = r2.Item2;
-                lblGamma.Text = "Degree exponent (gamma): " + String.Format("{0:n3}", -exp2);
+                lblGamma.Text = "Degree exponent (gamma): " + String.Format("{0:n3}", 1-exp2);  //For cumulative distro gamma = 1 - exp 
                 Series regression2 = new Series();
                 double temp_x2, temp_y2;
                 for (int i = 0; i < points; i++)
@@ -288,8 +286,6 @@ namespace Charts
                     regression2.Points.Add(new DataPoint(temp_x2, temp_y2));
                 }
                 chart2.Series.Clear();
-                Title title2 = new Title("Cumulative Degree Distribution");
-                chart2.Titles.Add(title2);
                 chart2.ChartAreas[0].AxisX.IsLogarithmic = true;
                 chart2.ChartAreas[0].AxisY.IsLogarithmic = true;
                 distro.ChartType = SeriesChartType.Point;

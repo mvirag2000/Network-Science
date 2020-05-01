@@ -7,10 +7,11 @@ namespace Networks
     {
         static void Main(string[] args)
         {
-            System.IO.StreamWriter file = new System.IO.StreamWriter("F:\\Math\\Network Science\\barabasi.edgelist2.txt");
+            System.IO.StreamWriter file = new System.IO.StreamWriter("F:\\Math\\Network Science\\barabasi.edgelist.txt");
             Random rnd = new Random();
-            int m = 4; //Links per new node (m)
-            int nodes = 2000; //Nodes in network (N) 
+            int m = 3; //Links per new node (avergage degree will be 2 * m) 
+            int nodes = 30000; //Nodes in network (N)  
+            bool multi = false; //Allow multi links 
             int old_node, rnd_node_idx, count;
             List<Edge> edgelist = new List<Edge> 
             {
@@ -29,7 +30,7 @@ namespace Networks
                         else
                             old_node = edgelist[(int)rnd_node_idx / 2].a;
                     }
-                    while (edgelist.Exists(x => (x.a == new_node && x.b == old_node)));  //Don't link to same node twice 
+                    while (edgelist.Exists(x => (x.a == new_node && x.b == old_node)) && !multi);  //Don't link to same node twice 
                     edgelist.Add(new Edge(new_node, old_node));
                 }
             }

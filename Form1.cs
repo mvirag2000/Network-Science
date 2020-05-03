@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Windows.Forms.DataVisualization.Charting;
 using System.ComponentModel;
@@ -61,36 +62,99 @@ namespace Charts
         {
             public int node_ID;
             public int degree;
-            public List<int> neighbors;
+            public List<Node> neighbors;
             public float clustering;
             public float neighbors_degree;
             public Node(int ID)
             {
                 node_ID = ID;
                 degree = 0;
-                neighbors = new List<int> { }; //Neighbors' node_IDs
+                neighbors = new List<Node> { }; //Neighbors' node_IDs
                 neighbors_degree = 0; //Average of neighbors' degrees 
             }
         }
-        public double Clustering(List<Node> l, List<Edge> e)
+        public class NodeList : IEnumerable<Node>
         {
-            double total_cluster = 0;
-            int nodes = l.Count();
-            foreach (Node node in l) //Traverse nodelist (3) clustering  
-            {   //Broke out this traversal to make it optional 
-                int cluster = 0;
-                textBox1.Text = "Calculating clustering coefficient " + node.node_ID.ToString();
-                Application.DoEvents();
-                foreach (int left in node.neighbors)
-                {
-                    foreach (int right in node.neighbors)
-                    {
-                        if (e.Exists(x => x.a == left && x.b == right)) cluster++;
-                    }
-                }
-                if (node.degree > 2) total_cluster += (double) 2 * cluster / (node.degree * (node.degree - 1));
+            private List<Node> nodelist;
+            public int selfies;
+            public int dupes;
+            public int max_degree;
+            public int min_degree;
+            public IEnumerator<Node> GetEnumerator()
+            {
+                return nodelist.GetEnumerator();
             }
-            return total_cluster / nodes;  //Average clustering 
+            IEnumerator IEnumerable.GetEnumerator()
+            {
+                return nodelist.GetEnumerator();
+            }
+            public NodeList(List<Edge> edgelist, Control msg)
+            {
+                nodelist = new List<Node> { };
+                selfies = 0;
+                dupes = 0;
+                foreach (Edge edge in edgelist) //Build nodelist  
+                {
+                    msg.Text = "Building Node List: " + edge.a; Application.DoEvents();
+                    if (!nodelist.Exists(x => x.node_ID == edge.a)) nodelist.Add(new Node(edge.a));
+                    if (!nodelist.Exists(x => x.node_ID == edge.b)) nodelist.Add(new Node(edge.b));
+                    if (edge.a == edge.b) selfies++;
+                    if (edgelist.Exists(x => x.a == edge.a && x.b == edge.b && !(x == edge)) ||
+                        edgelist.Exists(x => x.b == edge.a && x.a == edge.b && !(x == edge))) dupes++;
+                }
+                foreach (Node node in nodelist) //Traverse nodelist (1) degrees and neighbor list 
+                {
+                    msg.Text = "Building Neighbor List: " + node.node_ID; Application.DoEvents();
+                    node.degree = 0;
+                    foreach (Edge edge in edgelist)
+                    {
+                        if (edge.a == node.node_ID)
+                        {
+                            node.neighbors.Add(new Node(edge.b));
+                            node.degree++;
+                        }
+                        if (edge.b == node.node_ID)
+                        {
+                            node.neighbors.Add(new Node(edge.a));
+                            node.degree++;
+                        }
+                    }
+                    max_degree = Math.Max(max_degree, node.degree);
+                    min_degree = Math.Min(min_degree, node.degree);
+                }
+                foreach (Node node in nodelist)
+                {
+                    msg.Text = "Calculating degree correlation: " + node.node_ID.ToString(); Application.DoEvents();
+                    foreach (Node neighbor in node.neighbors)
+                    {
+                        node.neighbors_degree += nodelist.Find(x => neighbor.node_ID == x.node_ID).degree;
+                    }
+                    node.neighbors_degree = node.neighbors_degree / node.degree; //Average of neighbors' degrees
+                }
+            }
+            public Node Find(Predicate<Node> match)
+            {
+                return nodelist.Find(match);
+            }
+            public double Clustering(List<Edge> e, Control msg)
+            {
+                double total_cluster = 0;
+                int nodes = nodelist.Count();
+                foreach (Node node in nodelist)  
+                {
+                    msg.Text = "Calculating clustering coefficient " + node.node_ID.ToString(); Application.DoEvents();
+                    int cluster = 0;
+                    foreach (Node left in node.neighbors)
+                    {
+                        foreach (Node right in node.neighbors)
+                        {
+                            if (e.Exists(x => x.a == left.node_ID && x.b == right.node_ID)) cluster++;
+                        }
+                    }
+                    if (node.degree > 2) total_cluster += (double)2 * cluster / (node.degree * (node.degree - 1));
+                }
+                return total_cluster / nodes;  //Average clustering 
+            }
         }
         private void label1_Click(object sender, EventArgs e)
         {
@@ -125,65 +189,21 @@ namespace Charts
                     MessageBox.Show($"Security error.\n\nError message: {ex.Message}\n\n" +
                     $"Details:\n\n{ex.StackTrace}");
                 }
-                List<Node> nodelist = new List<Node> { };
-                int selfies = 0;
-                int dupes = 0;
-                foreach (Edge edge in edgelist) //Build nodelist  
-                {
-                    if (!nodelist.Exists(x => x.node_ID == edge.a)) nodelist.Add(new Node(edge.a));
-                    if (!nodelist.Exists(x => x.node_ID == edge.b)) nodelist.Add(new Node(edge.b));
-                    textBox1.Text = "Building Node List: " + edge.a;
-                    Application.DoEvents();
-                    if (edge.a == edge.b) selfies++;
-                    if (edgelist.Exists(x => x.a == edge.a && x.b == edge.b && !(x == edge)) ||
-                        edgelist.Exists(x => x.b == edge.a && x.a == edge.b && !(x == edge))) dupes++;
-                }
+                NodeList nodelist = new NodeList(edgelist, textBox1);
                 int links = edgelist.Count();
                 int nodes = nodelist.Count();
-                int max = 0;
-                int min = nodes;
+                int max = nodelist.max_degree;
+                int min = nodelist.min_degree;
                 string[] filename = openFileDialog1.FileName.Split('\\');
                 lblDataset.Text = "Dataset: " + filename[filename.Length - 1];
                 lblLinks.Text = "Links: " + links;
                 lblNodes.Text = "Nodes: " + nodes;
                 lblMean.Text = "Average Degree: " + String.Format("{0:n2}", (float)2 * links / nodes);
-                lblSelf.Text = "Self links: " + selfies;
-                lblDupe.Text = "Duplicate links: " + dupes;
-                Application.DoEvents();
-                foreach (Node node in nodelist) //Traverse nodelist (1) degrees and neighbor list 
-                {
-                    textBox1.Text = "Building Neighbor List: " + node.node_ID;
-                    Application.DoEvents();
-                    node.degree = 0;
-                    foreach (Edge edge in edgelist)
-                    {
-                        if (edge.a == node.node_ID)
-                        {
-                            node.neighbors.Add(edge.b);
-                            node.degree++;
-                        }
-                        if (edge.b == node.node_ID)
-                        {
-                            node.neighbors.Add(edge.a); 
-                            node.degree++;
-                        }
-                    }
-                    max = Math.Max(max, node.degree);
-                    min = Math.Min(min, node.degree);
-                }
+                lblSelf.Text = "Self links: " + nodelist.selfies;
+                lblDupe.Text = "Duplicate links: " + nodelist.dupes;
                 lblMax.Text = "Max Degree: " + max;
                 lblMin.Text = "Min Degree: " + min;
-                foreach (Node node in nodelist) //Traverse nodelist (2) degree correlation 
-                {   //Second traversal is needed because neighbor lists must be built first 
-                    textBox1.Text = "Calculating degree correlation: " + node.node_ID.ToString();
-                    Application.DoEvents();
-                    foreach (int n in node.neighbors)
-                    {
-                        node.neighbors_degree += nodelist.Find(x => n == x.node_ID).degree;
-                    }
-                    node.neighbors_degree = node.neighbors_degree / node.degree; //Average of neighbors' degrees
-                }
-                if (chkClustering.Checked) lblCluster.Text = "Average clustering coefficient: " + String.Format("{0:n3}", Clustering(nodelist, edgelist));  
+                if (chkClustering.Checked) lblCluster.Text = "Average clustering coefficient: " + String.Format("{0:n3}", nodelist.Clustering(edgelist, textBox1));  
                 Series neighbors = new Series();
                 for (int deg = 1; deg <= max; deg++)
                 {

@@ -62,14 +62,14 @@ namespace Charts
         {
             public int node_ID;
             public int degree;
-            public List<Node> neighbors;
-            public float clustering;
-            public float neighbors_degree;
+            public List<int> neighbors;
+            public double clustering;
+            public double neighbors_degree;
             public Node(int ID)
             {
                 node_ID = ID;
                 degree = 0;
-                neighbors = new List<Node> { }; //Neighbors' node_IDs
+                neighbors = new List<int> { }; //Neighbors' node_IDs
                 neighbors_degree = 0; //Average of neighbors' degrees 
             }
         }
@@ -102,6 +102,8 @@ namespace Charts
                     if (edgelist.Exists(x => x.a == edge.a && x.b == edge.b && !(x == edge)) ||
                         edgelist.Exists(x => x.b == edge.a && x.a == edge.b && !(x == edge))) dupes++;
                 }
+                min_degree = nodelist.Count();
+                max_degree = 0;
                 foreach (Node node in nodelist) //Traverse nodelist (1) degrees and neighbor list 
                 {
                     msg.Text = "Building Neighbor List: " + node.node_ID; Application.DoEvents();
@@ -110,12 +112,12 @@ namespace Charts
                     {
                         if (edge.a == node.node_ID)
                         {
-                            node.neighbors.Add(new Node(edge.b));
+                            node.neighbors.Add(edge.b);
                             node.degree++;
                         }
                         if (edge.b == node.node_ID)
                         {
-                            node.neighbors.Add(new Node(edge.a));
+                            node.neighbors.Add(edge.a);
                             node.degree++;
                         }
                     }
@@ -125,9 +127,9 @@ namespace Charts
                 foreach (Node node in nodelist)
                 {
                     msg.Text = "Calculating degree correlation: " + node.node_ID.ToString(); Application.DoEvents();
-                    foreach (Node neighbor in node.neighbors)
+                    foreach (int neighbor in node.neighbors)
                     {
-                        node.neighbors_degree += nodelist.Find(x => neighbor.node_ID == x.node_ID).degree;
+                        node.neighbors_degree += nodelist.Find(x => neighbor == x.node_ID).degree;
                     }
                     node.neighbors_degree = node.neighbors_degree / node.degree; //Average of neighbors' degrees
                 }
@@ -144,14 +146,15 @@ namespace Charts
                 {
                     msg.Text = "Calculating clustering coefficient " + node.node_ID.ToString(); Application.DoEvents();
                     int cluster = 0;
-                    foreach (Node left in node.neighbors)
+                    foreach (int left in node.neighbors)
                     {
-                        foreach (Node right in node.neighbors)
+                        foreach (int right in node.neighbors)
                         {
-                            if (e.Exists(x => x.a == left.node_ID && x.b == right.node_ID)) cluster++;
+                            if (e.Exists(x => x.a == left && x.b == right)) cluster++;
                         }
                     }
-                    if (node.degree > 2) total_cluster += (double)2 * cluster / (node.degree * (node.degree - 1));
+                    if (node.degree > 1) node.clustering = (double) 2 * cluster / (node.degree * (node.degree - 1)); 
+                    total_cluster += node.clustering;
                 }
                 return total_cluster / nodes;  //Average clustering 
             }
@@ -177,7 +180,7 @@ namespace Charts
                         string line;
                         while ((line = file.ReadLine()) != null)
                         {
-                            string[] token = line.Split('\t');
+                            string[] token = line.Split('\t'); //Remember files may use tab or comma                            
                             edgelist.Add(new Edge(token[0], token[1]));
                             textBox1.Text = "Building Edge List " + token[0];
                             Application.DoEvents();

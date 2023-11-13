@@ -56,7 +56,7 @@ string1 += "Directed graph: " + direction + "<br>"
 string1 += "Max Degree: %1.0f <br>" % max_deg 
 string1 += "Gamma: %1.2f <br>" % -slope
 para1 = Div(text=string1, width=450) 
-p = figure(plot_width=1000, plot_height=700, title='Degree Distribution', y_axis_type = "log", x_axis_type="log")  
+p = figure(width=1000, height=700, title='Degree Distribution', y_axis_type = "log", x_axis_type="log")  
 p.yaxis.axis_label = 'Count p(k)' 
 p.xaxis.axis_label = 'Local Degree (k)'
 p.x_range.start = min_deg
